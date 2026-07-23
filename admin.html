@@ -3,29 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔑 Ashot Keys - Admin Panel</title>
+    <title>🔑 Ashot Keys - Admin</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔑 Ashot Keys</h1>
-            <p>License key management system</p>
+            <h1>🔑 Ashot Key Generator</h1>
+            <p>Generate license keys for Ashot bots</p>
             <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.3);">
-                💡 Keys are stored in <code>keys.json</code> on GitHub
+                📁 Keys are stored in <code>keys.json</code>
             </div>
         </div>
 
         <div class="main-card">
-            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="showTab('generate')">Generate</button>
-                <button class="admin-tab" onclick="showTab('validate')">Validate</button>
-                <button class="admin-tab" onclick="showTab('list')">List Keys</button>
-                <button class="admin-tab" onclick="showTab('github')">GitHub</button>
-            </div>
-
-            <!-- Tab: Generate -->
-            <div id="tab-generate" class="tab-content active">
+            <!-- Generate Key -->
+            <div class="section">
                 <h2>Generate New Key</h2>
                 <div class="form-group">
                     <label>Username</label>
@@ -35,16 +28,14 @@
                     <label>Duration (hours)</label>
                     <input type="number" id="gen-hours" value="24" min="1" max="8760">
                 </div>
-                <div class="form-group">
-                    <label>Key (optional, leave empty for auto)</label>
-                    <input type="text" id="gen-custom-key" placeholder="Or enter custom key">
-                </div>
                 <button onclick="generateKey()" class="btn btn-primary">Generate Key</button>
                 <div id="gen-result" class="result-box"></div>
             </div>
 
-            <!-- Tab: Validate -->
-            <div id="tab-validate" class="tab-content">
+            <hr>
+
+            <!-- Validate Key -->
+            <div class="section">
                 <h2>Validate a Key</h2>
                 <div class="form-group">
                     <label>License Key</label>
@@ -54,10 +45,15 @@
                 <div id="val-result" class="result-box"></div>
             </div>
 
-            <!-- Tab: List -->
-            <div id="tab-list" class="tab-content">
+            <hr>
+
+            <!-- List Keys -->
+            <div class="section">
                 <h2>Active Keys</h2>
                 <button onclick="listKeys()" class="btn btn-secondary">Refresh List</button>
+                <button onclick="downloadKeysFile()" class="btn btn-secondary" style="margin-left:8px;">📥 Download keys.json</button>
+                <button onclick="document.getElementById('uploadKeys').click()" class="btn btn-secondary" style="margin-left:8px;">📤 Upload keys.json</button>
+                <input type="file" id="uploadKeys" accept=".json" style="display:none;" onchange="uploadKeys(event)">
                 <div id="list-result" class="result-box">
                     <table id="keys-table">
                         <thead>
@@ -73,25 +69,23 @@
                 </div>
             </div>
 
-            <!-- Tab: GitHub -->
-            <div id="tab-github" class="tab-content">
-                <h2>📦 GitHub Management</h2>
-                <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;">
-                    Keys are stored in <code>keys.json</code>. Download it, add your keys, and upload back.
-                </p>
-                
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-                    <button onclick="downloadKeys()" class="btn btn-secondary">📥 Download keys.json</button>
-                    <button onclick="document.getElementById('uploadKeys').click()" class="btn btn-secondary">📤 Upload keys.json</button>
-                    <input type="file" id="uploadKeys" accept=".json" style="display:none;" onchange="uploadKeys(event)">
-                </div>
-                
-                <div id="github-status" style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;font-size:12px;color:rgba(255,255,255,0.6);">
-                    💡 Instructions:<br>
-                    1. Click "Download keys.json"<br>
-                    2. Edit the file to add your keys<br>
-                    3. Click "Upload keys.json" to update<br>
-                    4. Users will get the new keys when they restart the game
+            <hr>
+
+            <!-- Instructions -->
+            <div class="section" style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;">
+                <h3>📋 How to use</h3>
+                <ol style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.8;">
+                    <li>Generate a key above</li>
+                    <li>The key is automatically added to <code>keys.json</code></li>
+                    <li>Download <code>keys.json</code> and upload it to your GitHub repo</li>
+                    <li>Users enter the key in the game</li>
+                    <li>Users' scripts will validate the key from your GitHub <code>keys.json</code></li>
+                </ol>
+                <div style="margin-top:12px;padding:12px;background:rgba(77,255,136,0.1);border-radius:8px;border:1px solid rgba(77,255,136,0.2);">
+                    <strong style="color:#4dff88;">💡 Pro tip:</strong>
+                    <span style="color:rgba(255,255,255,0.6);font-size:13px;">
+                        After generating keys, always upload the new <code>keys.json</code> to GitHub so users can validate their keys!
+                    </span>
                 </div>
             </div>
         </div>
