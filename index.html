@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashot Keys - License System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 Ashot Keys</h1>
+            <p>License key management system</p>
+        </div>
+
+        <div class="main-card">
+            <div class="tabs">
+                <button class="tab active" data-tab="generate">Generate</button>
+                <button class="tab" data-tab="validate">Validate</button>
+                <button class="tab" data-tab="list">List Keys</button>
+            </div>
+
+            <!-- Tab: Generate -->
+            <div id="tab-generate" class="tab-content active">
+                <h2>Generate New Key</h2>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="gen-username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label>Duration (hours)</label>
+                    <input type="number" id="gen-hours" value="24" min="1" max="8760">
+                </div>
+                <button onclick="generateKey()" class="btn btn-primary">Generate Key</button>
+                <div id="gen-result" class="result-box"></div>
+            </div>
+
+            <!-- Tab: Validate -->
+            <div id="tab-validate" class="tab-content">
+                <h2>Validate a Key</h2>
+                <div class="form-group">
+                    <label>License Key</label>
+                    <input type="text" id="val-key" placeholder="Enter key to validate">
+                </div>
+                <button onclick="validateKey()" class="btn btn-secondary">Validate</button>
+                <div id="val-result" class="result-box"></div>
+            </div>
+
+            <!-- Tab: List -->
+            <div id="tab-list" class="tab-content">
+                <h2>Active Keys</h2>
+                <button onclick="listKeys()" class="btn btn-secondary">Refresh List</button>
+                <div id="list-result" class="result-box">
+                    <table id="keys-table">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Username</th>
+                                <th>Expires</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ for Ashot Community</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
