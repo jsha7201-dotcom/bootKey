@@ -14,6 +14,7 @@
         .key-display { background: rgba(77,255,136,0.1); border: 1px solid rgba(77,255,136,0.2); border-radius: 8px; padding: 16px; text-align: center; font-size: 24px; font-family: monospace; color: #4dff88; margin: 16px 0; }
         .info { color: rgba(255,255,255,0.5); font-size: 13px; text-align: center; }
         .result { margin-top: 16px; }
+        hr { border-color: rgba(255,255,255,0.05); margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -33,7 +34,7 @@
             <button onclick="generateKey()">Generate Key</button>
             <div id="result" class="result"></div>
             
-            <hr style="border-color:rgba(255,255,255,0.05);margin:20px 0;">
+            <hr>
             
             <div class="form-group">
                 <label>Validate a key</label>
@@ -42,7 +43,7 @@
             <button onclick="validateKey()" style="background:rgba(255,255,255,0.1);color:#fff;">Validate</button>
             <div id="validate-result" class="result"></div>
             
-            <hr style="border-color:rgba(255,255,255,0.05);margin:20px 0;">
+            <hr>
             
             <button onclick="downloadKeys()" style="background:rgba(255,255,255,0.05);color:#fff;width:100%;">📥 Download keys.json</button>
             <div style="margin-top:8px;">
@@ -53,7 +54,6 @@
     </div>
 
     <script>
-        // KeySystem
         let keys = JSON.parse(localStorage.getItem('ashot_keys_admin') || '{}');
 
         function saveKeys() {
@@ -141,7 +141,6 @@
             reader.readAsText(file);
         }
 
-        // Expose functions
         window.generateKey = generateKey;
         window.validateKey = validateKey;
         window.downloadKeys = downloadKeys;
