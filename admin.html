@@ -3,75 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Ashot Keys</title>
+    <title>🔑 Ashot Keys - Admin Panel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Admin Panel</h1>
-            <p>Manage all keys and users</p>
+            <h1>🔑 Ashot Keys</h1>
+            <p>License key management system</p>
+            <div style="margin-top:10px;font-size:12px;color:rgba(255,255,255,0.3);">
+                💡 Keys are stored in <code>keys.json</code> on GitHub
+            </div>
         </div>
 
-        <!-- Login Form -->
-        <div id="login-form" class="main-card">
-            <h2>Admin Login</h2>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="admin-pass" placeholder="Enter admin password">
-            </div>
-            <button onclick="adminLogin()" class="btn btn-primary">Login</button>
-            <div id="login-error" class="error-msg"></div>
-        </div>
-
-        <!-- Admin Panel (hidden by default) -->
-        <div id="admin-panel" class="main-card" style="display:none;">
-            <div class="admin-stats">
-                <div class="stat-box">
-                    <h3 id="stat-total">0</h3>
-                    <p>Total Keys</p>
-                </div>
-                <div class="stat-box">
-                    <h3 id="stat-active">0</h3>
-                    <p>Active Keys</p>
-                </div>
-                <div class="stat-box">
-                    <h3 id="stat-expired">0</h3>
-                    <p>Expired</p>
-                </div>
+        <div class="main-card">
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="showTab('generate')">Generate</button>
+                <button class="admin-tab" onclick="showTab('validate')">Validate</button>
+                <button class="admin-tab" onclick="showTab('list')">List Keys</button>
+                <button class="admin-tab" onclick="showTab('github')">GitHub</button>
             </div>
 
-            <div class="admin-actions">
+            <!-- Tab: Generate -->
+            <div id="tab-generate" class="tab-content active">
+                <h2>Generate New Key</h2>
                 <div class="form-group">
-                    <label>Bulk Generate (username prefix)</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="bulk-prefix" placeholder="Prefix" style="flex:1;">
-                        <input type="number" id="bulk-count" value="5" min="1" max="100" style="width:80px;">
-                        <input type="number" id="bulk-hours" value="24" min="1" max="8760" style="width:80px;">
-                        <button onclick="bulkGenerate()" class="btn btn-primary">Generate</button>
-                    </div>
+                    <label>Username</label>
+                    <input type="text" id="gen-username" placeholder="Enter username" value="Ashot">
                 </div>
-                <button onclick="exportKeys()" class="btn btn-secondary">📤 Export JSON</button>
-                <button onclick="importKeys()" class="btn btn-secondary">📥 Import JSON</button>
-                <button onclick="clearAllKeys()" class="btn btn-danger">🗑️ Clear All</button>
+                <div class="form-group">
+                    <label>Duration (hours)</label>
+                    <input type="number" id="gen-hours" value="24" min="1" max="8760">
+                </div>
+                <div class="form-group">
+                    <label>Key (optional, leave empty for auto)</label>
+                    <input type="text" id="gen-custom-key" placeholder="Or enter custom key">
+                </div>
+                <button onclick="generateKey()" class="btn btn-primary">Generate Key</button>
+                <div id="gen-result" class="result-box"></div>
             </div>
 
-            <div class="admin-list">
-                <h3>All Keys</h3>
-                <table id="admin-keys-table">
-                    <thead>
-                        <tr>
-                            <th>Key</th>
-                            <th>Username</th>
-                            <th>Created</th>
-                            <th>Expires</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-keys-body"></tbody>
-                </table>
+            <!-- Tab: Validate -->
+            <div id="tab-validate" class="tab-content">
+                <h2>Validate a Key</h2>
+                <div class="form-group">
+                    <label>License Key</label>
+                    <input type="text" id="val-key" placeholder="Enter key to validate">
+                </div>
+                <button onclick="validateKey()" class="btn btn-secondary">Validate</button>
+                <div id="val-result" class="result-box"></div>
             </div>
+
+            <!-- Tab: List -->
+            <div id="tab-list" class="tab-content">
+                <h2>Active Keys</h2>
+                <button onclick="listKeys()" class="btn btn-secondary">Refresh List</button>
+                <div id="list-result" class="result-box">
+                    <table id="keys-table">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Username</th>
+                                <th>Expires</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: GitHub -->
+            <div id="tab-github" class="tab-content">
+                <h2>📦 GitHub Management</h2>
+                <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;">
+                    Keys are stored in <code>keys.json</code>. Download it, add your keys, and upload back.
+                </p>
+                
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+                    <button onclick="downloadKeys()" class="btn btn-secondary">📥 Download keys.json</button>
+                    <button onclick="document.getElementById('uploadKeys').click()" class="btn btn-secondary">📤 Upload keys.json</button>
+                    <input type="file" id="uploadKeys" accept=".json" style="display:none;" onchange="uploadKeys(event)">
+                </div>
+                
+                <div id="github-status" style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;font-size:12px;color:rgba(255,255,255,0.6);">
+                    💡 Instructions:<br>
+                    1. Click "Download keys.json"<br>
+                    2. Edit the file to add your keys<br>
+                    3. Click "Upload keys.json" to update<br>
+                    4. Users will get the new keys when they restart the game
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ for Ashot Community</p>
         </div>
     </div>
 
