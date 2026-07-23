@@ -17,8 +17,7 @@ class KeySystem {
 
     saveKeys() {
         localStorage.setItem('ashot_keys_admin', JSON.stringify(this.keys));
-        // Télécharger aussi pour export
-        this.downloadKeysFile();
+        this.validateAllKeys();
     }
 
     validateAllKeys() {
@@ -87,33 +86,24 @@ class KeySystem {
         return Object.fromEntries(this.validKeys);
     }
 
-    downloadKeysFile() {
-        const json = JSON.stringify(this.keys, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'keys.json';
-        a.click();
-        URL.revokeObjectURL(url);
+    getAllKeys() {
+        return this.keys;
     }
 
-    uploadKeysFile(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    this.keys = data;
-                    this.saveKeys();
-                    this.validateAllKeys();
-                    resolve(true);
-                } catch(e) {
-                    reject(e);
-                }
-            };
-            reader.readAsText(file);
-        });
+    exportKeys() {
+        return JSON.stringify(this.keys, null, 2);
+    }
+
+    importKeys(json) {
+        try {
+            const data = JSON.parse(json);
+            this.keys = data;
+            this.saveKeys();
+            this.validateAllKeys();
+            return true;
+        } catch(e) {
+            return false;
+        }
     }
 }
 
@@ -122,54 +112,36 @@ const keySystem = new KeySystem();
 
 // ─── UI FUNCTIONS ────────────────────────────────────────────────────
 
-function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
-    document.getElementById(`tab-${tab}`).classList.add('active');
-    document.querySelector(`.admin-tab[onclick="showTab('${tab}')"]`).classList.add('active');
-}
-
 function generateKey() {
     const username = document.getElementById('gen-username').value.trim() || 'user';
     const hours = parseInt(document.getElementById('gen-hours').value) || 24;
-    const customKey = document.getElementById('gen-custom-key').value.trim().toUpperCase();
-
-    let key;
-    if (customKey) {
-        key = customKey;
-        const expiry = Math.floor(Date.now() / 1000) + (hours * 3600);
-        keySystem.keys[key] = {
-            username: username,
-            expiry: expiry,
-            created: Math.floor(Date.now() / 1000),
-            duration: hours
-        };
-        keySystem.saveKeys();
-        keySystem.validateAllKeys();
-    } else {
-        key = keySystem.generateKey(username, hours);
-    }
-
+    
+    const key = keySystem.generateKey(username, hours);
+    
     document.getElementById('gen-result').innerHTML = `
         <div class="key-display">${key}</div>
         <div class="key-info">
-            Username: ${username}<br>
-            Valid for: ${hours} hours<br>
-            Expires: ${new Date((Math.floor(Date.now() / 1000) + hours * 3600) * 1000).toLocaleString()}
+            👤 Username: ${username}<br>
+            ⏱ Valid for: ${hours} hours<br>
+            📅 Expires: ${new Date((Math.floor(Date.now() / 1000) + hours * 3600) * 1000).toLocaleString()}
         </div>
-        <button onclick="copyKey('${key}')" class="btn btn-secondary" style="margin-top:10px;">📋 Copy Key</button>
-        <button onclick="downloadKey('${key}')" class="btn btn-secondary" style="margin-top:10px;">📥 Download keys.json</button>
+        <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button onclick="copyKey('${key}')" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;">📋 Copy Key</button>
+            <button onclick="downloadKeysFile()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;">📥 Download keys.json</button>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:rgba(255,200,77,0.1);border-radius:8px;border:1px solid rgba(255,200,77,0.2);">
+            <span style="color:#ffc84d;font-size:12px;">⚠️ Don't forget to upload <code>keys.json</code> to GitHub!</span>
+        </div>
     `;
 }
 
 function copyKey(key) {
     navigator.clipboard.writeText(key).then(() => {
-        alert('✅ Key copied to clipboard!');
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = originalText, 2000);
     });
-}
-
-function downloadKey() {
-    keySystem.downloadKeysFile();
 }
 
 function validateKey() {
@@ -184,8 +156,8 @@ function validateKey() {
         document.getElementById('val-result').innerHTML = `
             <div style="color: #4dff88; font-size: 18px; font-weight: 600;">✅ Valid Key</div>
             <div style="color: rgba(255,255,255,0.6); margin-top: 8px;">
-                Username: ${result.data.username}<br>
-                Expires: ${new Date(result.data.expiry * 1000).toLocaleString()}
+                👤 Username: ${result.data.username}<br>
+                📅 Expires: ${new Date(result.data.expiry * 1000).toLocaleString()}
             </div>
         `;
     } else {
@@ -212,12 +184,16 @@ function listKeys() {
             <td>${data.username}</td>
             <td>${new Date(data.expiry * 1000).toLocaleString()}</td>
             <td>
-                <button onclick="copyKey('${key}')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 11px;">📋 Copy</button>
+                <button onclick="copyKeyFromList('${key}')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 11px;">📋</button>
                 <button onclick="deleteKey('${key}')" class="btn btn-danger" style="padding: 4px 12px; font-size: 11px;">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
     }
+}
+
+function copyKeyFromList(key) {
+    navigator.clipboard.writeText(key);
 }
 
 function deleteKey(key) {
@@ -227,38 +203,47 @@ function deleteKey(key) {
     }
 }
 
-function downloadKeys() {
-    keySystem.downloadKeysFile();
+function downloadKeysFile() {
+    const json = keySystem.exportKeys();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'keys.json';
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
-async function uploadKeys(event) {
+function uploadKeys(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    try {
-        await keySystem.uploadKeysFile(file);
-        document.getElementById('github-status').innerHTML = `
-            <div style="color: #4dff88;">✅ Keys uploaded successfully!</div>
-            <div style="color: rgba(255,255,255,0.5); margin-top:8px;">
-                ${Object.keys(keySystem.keys).length} keys loaded
-            </div>
-        `;
-        listKeys();
-    } catch(e) {
-        document.getElementById('github-status').innerHTML = `
-            <div style="color: #ff4444;">❌ Error uploading file: ${e.message}</div>
-        `;
-    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const success = keySystem.importKeys(e.target.result);
+        if (success) {
+            alert('✅ Keys imported successfully!');
+            listKeys();
+        } else {
+            alert('❌ Invalid JSON file');
+        }
+    };
+    reader.readAsText(file);
 }
 
 // ─── EXPOSE TO GLOBAL ──────────────────────────────────────────────
-window.showTab = showTab;
 window.generateKey = generateKey;
 window.copyKey = copyKey;
-window.downloadKey = downloadKey;
 window.validateKey = validateKey;
 window.listKeys = listKeys;
 window.deleteKey = deleteKey;
-window.downloadKeys = downloadKeys;
+window.downloadKeysFile = downloadKeysFile;
 window.uploadKeys = uploadKeys;
-window.KeySystem = KeySystem;
+window.copyKeyFromList = copyKeyFromList;
+
+// ─── LOAD ON PAGE ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    listKeys();
+    console.log('🔑 Ashot Key System loaded!');
+    console.log('📋 Active keys:', keySystem.listKeys());
+});
